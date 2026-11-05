@@ -1,1 +1,825 @@
-test
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFP AI Builder - Enterprise Treasury Management</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 flex flex-col overflow-hidden">
+
+    <!-- Top Notification Banner -->
+    <div id="notification-banner" class="hidden bg-indigo-600 text-white text-xs px-4 py-2 flex items-center justify-between shadow-md z-50 transition-all duration-300">
+        <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-circle-info"></i>
+            <span id="notification-text">Action completed successfully.</span>
+        </div>
+        <button onclick="hideNotification()" class="text-white hover:text-indigo-200 focus:outline-none">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Main App Container -->
+    <div class="flex h-full overflow-hidden">
+
+        <!-- Sidebar Navigation (TM Proximity Style) -->
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-20 flex-shrink-0">
+            <!-- Brand Header -->
+            <div class="p-5 border-b border-slate-800 flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-inner">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div>
+                    <h1 class="text-white font-semibold text-sm tracking-wide">RFP AI BUILDER</h1>
+                    <p class="text-xs text-slate-400">Treasury Management</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+                <div class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 mb-2">Workflow Screens</div>
+                
+                <button onclick="switchScreen('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left bg-indigo-600 text-white shadow-sm">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </button>
+
+                <button onclick="switchScreen('upload')" id="nav-upload" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-cloud-arrow-up w-5 text-center"></i>
+                    <span>1. Upload RFP</span>
+                </button>
+
+                <button onclick="switchScreen('pipeline')" id="nav-pipeline" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-gears w-5 text-center"></i>
+                    <span>2. Processing Pipeline</span>
+                    <span id="pipeline-badge" class="ml-auto text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">Ready</span>
+                </button>
+
+                <button onclick="switchScreen('review')" id="nav-review" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-pen-to-square w-5 text-center"></i>
+                    <span>3. Review & Edit Draft</span>
+                </button>
+
+                <button onclick="switchScreen('template')" id="nav-template" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-left text-slate-300 hover:bg-slate-800 hover:text-white">
+                    <i class="fa-solid fa-file-arrow-down w-5 text-center"></i>
+                    <span>4. Template Output</span>
+                </button>
+
+                <div class="pt-6 text-[10px] uppercase tracking-wider text-slate-500 font-semibold px-3 mb-2">System Status</div>
+                <div class="px-3 py-2 bg-slate-800/50 rounded-lg text-xs space-y-2 border border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Azure Foundry API:</span>
+                        <span class="flex items-center text-emerald-400 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Connected</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Knowledge Search:</span>
+                        <span class="flex items-center text-amber-400 font-medium"><span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span> Indexing</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-slate-400">Active Storage:</span>
+                        <span class="text-slate-200 font-mono">FileNet / MongoDB</span>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- User Footer -->
+            <div class="p-4 border-t border-slate-800 flex items-center space-x-3 bg-slate-950/40">
+                <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-semibold text-xs border border-indigo-500/30">
+                    TM
+                </div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-medium text-slate-200 truncate">RFP Operations Team</p>
+                    <p class="text-[11px] text-slate-400 truncate">Treasury Management</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-100">
+            
+            <!-- Top Header Bar -->
+            <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between flex-shrink-0 shadow-sm">
+                <div class="flex items-center space-x-4">
+                    <h2 id="screen-title" class="text-lg font-bold text-slate-900">Dashboard</h2>
+                    <span id="screen-subtitle" class="text-xs text-slate-500 hidden sm:inline">Overview of RFP responses and generation metrics</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="resetDemoState()" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition border border-slate-300">
+                        <i class="fa-solid fa-rotate-right mr-1.5"></i> Reset Demo
+                    </button>
+                    <button onclick="switchScreen('upload')" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>New RFP Request</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dynamic Screens Container -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+                
+                <!-- ================= SCREEN 1: DASHBOARD ================= -->
+                <div id="screen-dashboard" class="space-y-6">
+                    <!-- Welcome Banner -->
+                    <div class="bg-gradient-to-r from-indigo-900 to-indigo-700 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                        <div class="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 flex items-center justify-center pointer-events-none">
+                            <i class="fa-solid fa-file-invoice-dollar text-9xl"></i>
+                        </div>
+                        <div class="max-w-2xl relative z-10 space-y-2">
+                            <span class="bg-indigo-500/40 text-indigo-200 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider border border-indigo-400/30">TM Proximity Reference</span>
+                            <h3 class="text-2xl font-bold tracking-tight">Automate Treasury Management RFP Responses</h3>
+                            <p class="text-indigo-100 text-sm leading-relaxed">
+                                Reduce response preparation from 10–50 hours down to minutes. Extract questions, aggregate SharePoint & Confluence knowledge via Azure Search, and generate fully formatted client drafts.
+                            </p>
+                            <div class="pt-2 flex items-center space-x-3">
+                                <button onclick="switchScreen('upload')" class="px-4 py-2 bg-white text-indigo-900 hover:bg-indigo-50 font-semibold text-xs rounded-lg shadow transition">
+                                    Start New RFP Upload
+                                </button>
+                                <button onclick="switchScreen('pipeline')" class="px-4 py-2 bg-indigo-800/80 hover:bg-indigo-800 text-white font-medium text-xs rounded-lg transition border border-indigo-600">
+                                    View Active Pipeline
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metric Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-500">Active RFPs</span>
+                                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                                    <i class="fa-solid fa-folder-open"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-baseline justify-between">
+                                <span class="text-2xl font-bold text-slate-900">12</span>
+                                <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">+3 this week</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-500">Avg Draft Time</span>
+                                <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-baseline justify-between">
+                                <span class="text-2xl font-bold text-slate-900">4.2 mins</span>
+                                <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">-85% vs manual</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-500">Knowledge Hits</span>
+                                <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-sm">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-baseline justify-between">
+                                <span class="text-2xl font-bold text-slate-900">98.4%</span>
+                                <span class="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Azure Search</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-slate-500">Pending Review</span>
+                                <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex items-baseline justify-between">
+                                <span class="text-2xl font-bold text-slate-900" id="dash-pending-count">2 drafts</span>
+                                <span class="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">Action Req.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent RFP Table -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                            <h4 class="font-semibold text-slate-900 text-sm">Recent Institutional RFPs</h4>
+                            <span class="text-xs text-slate-500">Showing last 3 requests</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                               <thead>
+                                   <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                                       <th class="py-3 px-6">Client Name</th>
+                                       <th class="py-3 px-6">Document File</th>
+                                       <th class="py-3 px-6">Questions</th>
+                                       <th class="py-3 px-6">Status</th>
+                                       <th class="py-3 px-6 text-right">Actions</th>
+                                   </tr>
+                               </thead>
+                               <tbody class="divide-y divide-slate-200">
+                                   <tr class="hover:bg-slate-50 transition">
+                                       <td class="py-3.5 px-6 font-medium text-slate-900">Global Horizon Financial Corp</td>
+                                       <td class="py-3.5 px-6 font-mono text-slate-600">GH_TM_RFP_2026_Q2.pdf</td>
+                                       <td class="py-3.5 px-6">24 Qs</td>
+                                       <td class="py-3.5 px-6"><span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-medium">Ready for Review</span></td>
+                                       <td class="py-3.5 px-6 text-right">
+                                           <button onclick="switchScreen('review')" class="text-indigo-600 hover:text-indigo-900 font-semibold">Open Draft &rarr;</button>
+                                       </td>
+                                   </tr>
+                                   <tr class="hover:bg-slate-50 transition">
+                                       <td class="py-3.5 px-6 font-medium text-slate-900">Apex Vanguard Investments</td>
+                                       <td class="py-3.5 px-6 font-mono text-slate-600">Apex_Treasury_Request_v3.docx</td>
+                                       <td class="py-3.5 px-6">18 Qs</td>
+                                       <td class="py-3.5 px-6"><span class="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full font-medium">Processing Pipeline</span></td>
+                                       <td class="py-3.5 px-6 text-right">
+                                           <button onclick="switchScreen('pipeline')" class="text-indigo-600 hover:text-indigo-900 font-semibold">Track Progress &rarr;</button>
+                                       </td>
+                                   </tr>
+                                   <tr class="hover:bg-slate-50 transition">
+                                       <td class="py-3.5 px-6 font-medium text-slate-900">Sterling Maritime & Shipping</td>
+                                       <td class="py-3.5 px-6 font-mono text-slate-600">Sterling_RFP_CashMgmt.pdf</td>
+                                       <td class="py-3.5 px-6">31 Qs</td>
+                                       <td class="py-3.5 px-6"><span class="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full font-medium">Archived</span></td>
+                                       <td class="py-3.5 px-6 text-right">
+                                           <button onclick="switchScreen('template')" class="text-slate-600 hover:text-slate-900 font-semibold">Download Output &rarr;</button>
+                                       </td>
+                                   </tr>
+                               </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= SCREEN 2: UPLOAD RFP ================= -->
+                <div id="screen-upload" class="hidden space-y-6 max-w-4xl mx-auto">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Upload New Client RFP Document</h3>
+                            <p class="text-xs text-slate-500 mt-1">Provide the client RFP file (PDF or DOCX) and select the required Treasury Management response template.</p>
+                        </div>
+
+                        <!-- Dropzone -->
+                        <div id="dropzone" class="border-2 border-dashed border-indigo-300 bg-indigo-50/40 rounded-xl p-8 text-center hover:bg-indigo-50 transition cursor-pointer relative" onclick="simulateFileSelect()">
+                            <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.doc" onchange="handleFileSelected(event)">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto text-2xl mb-4 shadow-sm">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                            </div>
+                            <h4 class="text-sm font-semibold text-slate-900" id="upload-label-title">Drag & drop your RFP document here</h4>
+                            <p class="text-xs text-slate-500 mt-1">Supports PDF, DOCX (Max 50MB) • TM Proximity Layout</p>
+                            <div class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-lg shadow hover:bg-indigo-700 transition">
+                                Browse Computer
+                            </div>
+                        </div>
+
+                        <!-- Uploaded File Details Card (Initially Hidden) -->
+                        <div id="file-details-card" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-bold text-sm">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                </div>
+                                <div>
+                                    <h5 id="selected-filename" class="text-sm font-semibold text-slate-900">GH_TM_RFP_2026_Q2.pdf</h5>
+                                    <p class="text-xs text-slate-500">4.8 MB • FileNet ID: #FN-8839201 • Uploaded successfully</p>
+                                </div>
+                            </div>
+                            <button onclick="clearFileSelection()" class="text-slate-400 hover:text-red-600 text-sm">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+
+                        <!-- Configuration Form -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Client / Institution Name</label>
+                                <input type="text" id="client-name-input" value="Global Horizon Financial Corp" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Treasury Management Template</label>
+                                <select class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                                    <option>Standard TM RFP Response Template v4.2</option>
+                                    <option>Institutional Cash Management Template</option>
+                                    <option>Liquidity & Escrow Specialized Template</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="pt-4 flex justify-end">
+                            <button onclick="startProcessing()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow transition flex items-center space-x-2">
+                                <span>Proceed to Processing Pipeline</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= SCREEN 3: PROCESSING PIPELINE ================= -->
+                <div id="screen-pipeline" class="hidden space-y-6 max-w-4xl mx-auto">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-8">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+                            <div>
+                                <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Automated Workflow Engine</span>
+                                <h3 class="text-xl font-bold text-slate-900 mt-1">4-Step RFP Processing Pipeline</h3>
+                            </div>
+                            <div id="pipeline-status-badge" class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-2 w-fit">
+                                <i class="fa-solid fa-spinner animate-spin"></i>
+                                <span>Pipeline in Progress...</span>
+                            </div>
+                        </div>
+
+                        <!-- 4 Step Cards -->
+                        <div class="space-y-4">
+                            <!-- Step 1 -->
+                            <div id="step-card-1" class="border border-slate-200 rounded-xl p-5 transition bg-indigo-50/50 border-indigo-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="step-icon-1" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                                            1
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-slate-900">Extract Questions from RFP</h4>
+                                            <p class="text-xs text-slate-500">Analyze document structure, tables, and questionnaire sections to identify questions.</p>
+                                        </div>
+                                    </div>
+                                    <span id="step-status-1" class="text-xs font-semibold text-indigo-600 bg-indigo-100 px-2.5 py-1 rounded-md">Processing...</span>
+                                </div>
+                                <div id="step-detail-1" class="mt-3 text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-200 font-mono">
+                                    Status: Analyzing PDF layout and heading hierarchy... 24 questions detected.
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div id="step-card-2" class="border border-slate-200 rounded-xl p-5 transition bg-white opacity-60">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="step-icon-2" class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">
+                                            2
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-slate-900">Extract RFP Context</h4>
+                                            <p class="text-xs text-slate-500">Capture background requirements, currency specifications, and operational constraints.</p>
+                                        </div>
+                                    </div>
+                                    <span id="step-status-2" class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">Waiting</span>
+                                </div>
+                                <div id="step-detail-2" class="mt-3 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-200 font-mono hidden">
+                                    Status: Awaiting Step 1 completion.
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div id="step-card-3" class="border border-slate-200 rounded-xl p-5 transition bg-white opacity-60">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="step-icon-3" class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">
+                                            3
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-slate-900">Find & Generate Answers (Knowledge Search)</h4>
+                                            <p class="text-xs text-slate-500">Query SharePoint & Confluence index via Azure Search and summarize with LLM.</p>
+                                        </div>
+                                    </div>
+                                    <span id="step-status-3" class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">Waiting</span>
+                                </div>
+                                <div id="step-detail-3" class="mt-3 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-200 font-mono hidden">
+                                    Status: Awaiting Step 2 completion.
+                                </div>
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div id="step-card-4" class="border border-slate-200 rounded-xl p-5 transition bg-white opacity-60">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="step-icon-4" class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">
+                                            4
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-slate-900">Populate Response Template</h4>
+                                            <p class="text-xs text-slate-500">Insert questions and generated answers into client Treasury Management template.</p>
+                                        </div>
+                                    </div>
+                                    <span id="step-status-4" class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">Waiting</span>
+                                </div>
+                                <div id="step-detail-4" class="mt-3 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-200 font-mono hidden">
+                                    Status: Awaiting Step 3 completion.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="pt-4 flex items-center justify-between border-t border-slate-200">
+                            <button onclick="runPipelineSimulation()" id="rerun-pipeline-btn" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-lg transition">
+                                <i class="fa-solid fa-rotate-right mr-1.5"></i> Re-run Pipeline Simulation
+                            </button>
+                            <button onclick="switchScreen('review')" id="goto-review-btn" disabled class="px-6 py-2.5 bg-indigo-300 cursor-not-allowed text-white font-semibold text-xs rounded-lg transition flex items-center space-x-2">
+                                <span>Review Generated Draft</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= SCREEN 4: REVIEW & EDIT DRAFT ================= -->
+                <div id="screen-review" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <div>
+                            <span class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">Human-in-the-Loop Review</span>
+                            <h3 class="text-lg font-bold text-slate-900">Review & Edit Generated Answers</h3>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xs text-slate-500"><span id="edited-count">0</span> answers modified</span>
+                            <button onclick="saveDraftEdits()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg border border-slate-300 transition">
+                                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Draft
+                            </button>
+                            <button onclick="switchScreen('template')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow transition flex items-center space-x-2">
+                                <span>Finalize & View Template</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Q&A Editable Cards Grid -->
+                    <div class="space-y-4" id="qa-cards-container">
+                        <!-- Q1 -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded">Question 1.1</span>
+                                <span class="text-xs text-emerald-600 font-medium flex items-center"><i class="fa-solid fa-circle-check mr-1"></i> Knowledge Search Match (96.4%)</span>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-slate-900">Describe your bank's multi-currency notional pooling capabilities and automated cross-border sweeping structures.</h4>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Generated Answer (Editable)</label>
+                                <textarea rows="3" class="w-full p-3 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50/50" oninput="markEdited(this)">Our Treasury Management platform provides fully automated multi-currency notional pooling across 35+ major and emerging market currencies. Utilizing real-time FX rate conversions and automated end-of-day sweeping, clients can optimize liquidity without physical fund transfers. Configurable zero-balancing and target-balancing schedules are supported globally via our secure corporate portal.</textarea>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+                                <span>Source: SharePoint / TM_Global_Liquidity_Whitepaper_v3.docx</span>
+                                <span class="text-indigo-600 font-medium cursor-pointer hover:underline" onclick="showSourceModal('SharePoint: TM_Global_Liquidity_Whitepaper_v3.docx')">View Source Chunk</span>
+                            </div>
+                        </div>
+
+                        <!-- Q2 -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded">Question 1.2</span>
+                                <span class="text-xs text-emerald-600 font-medium flex items-center"><i class="fa-solid fa-circle-check mr-1"></i> Knowledge Search Match (94.1%)</span>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-slate-900">What fraud prevention and real-time payment validation controls are integrated into your API payment gateway?</h4>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Generated Answer (Editable)</label>
+                                <textarea rows="3" class="w-full p-3 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50/50" oninput="markEdited(this)">Our API gateway incorporates multi-factor anomaly detection, real-time payee name verification (Confirmation of Payee), velocity limits, and automated Sanctions Screening (OFAC/EU lists) prior to batch execution. All transactions are logged with immutable audit trails compatible with corporate ERP systems.</textarea>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+                                <span>Source: Confluence / Payments_Security_Architecture_2025.md</span>
+                                <span class="text-indigo-600 font-medium cursor-pointer hover:underline" onclick="showSourceModal('Confluence: Payments_Security_Architecture_2025.md')">View Source Chunk</span>
+                            </div>
+                        </div>
+
+                        <!-- Q3 -->
+                        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded">Question 2.1</span>
+                                <span class="text-xs text-emerald-600 font-medium flex items-center"><i class="fa-solid fa-circle-check mr-1"></i> Knowledge Search Match (91.8%)</span>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-slate-900">Explain your ISO 20022 messaging support and custom reporting formats for corporate reconciliation.</h4>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Generated Answer (Editable)</label>
+                                <textarea rows="3" class="w-full p-3 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50/50" oninput="markEdited(this)">We provide native end-to-end support for ISO 20022 XML message formats (camt.052, camt.053, pain.001). Clients can also configure bespoke custom reporting schemas delivered via secure SFTP or REST API endpoints with scheduled automated generation.</textarea>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+                                <span>Source: SharePoint / ISO20022_Implementation_Guide.pdf</span>
+                                <span class="text-indigo-600 font-medium cursor-pointer hover:underline" onclick="showSourceModal('SharePoint: ISO20022_Implementation_Guide.pdf')">View Source Chunk</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= SCREEN 5: TEMPLATE OUTPUT ================= -->
+                <div id="screen-template" class="hidden space-y-6 max-w-4xl mx-auto">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+                            <div>
+                                <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Step 4 Complete</span>
+                                <h3 class="text-xl font-bold text-slate-900 mt-1">Client Treasury Management Template Ready</h3>
+                                <p class="text-xs text-slate-500 mt-1">Populated into client's required format. Ready for final RFP Team quality & risk sign-off.</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <button onclick="triggerExport('docx')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow transition flex items-center space-x-2">
+                                    <i class="fa-solid fa-file-word"></i>
+                                    <span>Download DOCX</span>
+                                </button>
+                                <button onclick="triggerExport('pdf')" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs rounded-lg shadow transition flex items-center space-x-2">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                    <span>Download PDF</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Document Preview Box -->
+                        <div class="bg-slate-50 border border-slate-300 rounded-xl p-6 space-y-6 font-serif">
+                            <div class="border-b border-slate-200 pb-4 flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-base text-slate-900 font-sans">REQUEST FOR PROPOSAL RESPONSE</h4>
+                                    <p class="text-xs text-slate-600 font-sans mt-0.5">Prepared for: <strong class="text-slate-900">Global Horizon Financial Corp</strong></p>
+                                    <p class="text-xs text-slate-500 font-sans">Template: Standard TM RFP Response Template v4.2</p>
+                                </div>
+                                <div class="text-right text-xs text-slate-500 font-sans">
+                                    <p>Date: June 7, 2026</p>
+                                    <p class="text-emerald-600 font-semibold mt-1"><i class="fa-solid fa-shield-check mr-1"></i> Quality & Risk Checked</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4 text-xs text-slate-700 font-serif leading-relaxed">
+                                <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-2">
+                                    <p class="font-bold text-slate-900 font-sans text-xs">Section 1: Multi-Currency Liquidity & Sweeping</p>
+                                    <p><strong>Q:</strong> Describe your bank's multi-currency notional pooling capabilities and automated cross-border sweeping structures.</p>
+                                    <p class="text-slate-600 bg-slate-50 p-2.5 rounded border border-slate-100"><strong>Response:</strong> Our Treasury Management platform provides fully automated multi-currency notional pooling across 35+ major and emerging market currencies. Utilizing real-time FX rate conversions and automated end-of-day sweeping, clients can optimize liquidity without physical fund transfers...</p>
+                                </div>
+
+                                <div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm space-y-2">
+                                    <p class="font-bold text-slate-900 font-sans text-xs">Section 2: Security & Payment Validation</p>
+                                    <p><strong>Q:</strong> What fraud prevention and real-time payment validation controls are integrated into your API payment gateway?</p>
+                                    <p class="text-slate-600 bg-slate-50 p-2.5 rounded border border-slate-100"><strong>Response:</strong> Our API gateway incorporates multi-factor anomaly detection, real-time payee name verification (Confirmation of Payee), velocity limits, and automated Sanctions Screening (OFAC/EU lists)...</p>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 border-t border-slate-200 text-center text-[11px] text-slate-400 font-sans">
+                                Confidential & Proprietary • Stored in FileNet (#FN-8839201) • Generated by RFP AI Builder
+                            </div>
+                        </div>
+
+                        <!-- Final Sign-off Box -->
+                        <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5 flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <div>
+                                    <h5 class="text-sm font-bold text-indigo-950">Ready to Send to Client</h5>
+                                    <p class="text-xs text-indigo-800">The RFP team has reviewed quality and risk. Final response package is fully compiled.</p>
+                                </div>
+                            </div>
+                            <button onclick="showNotification('RFP draft successfully submitted to client portal!')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow transition">
+                                Send to Client
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Source Chunk Modal -->
+    <div id="source-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+                <h4 class="font-bold text-slate-900 text-sm flex items-center">
+                    <i class="fa-solid fa-database text-indigo-600 mr-2"></i> Knowledge Search Source Chunk
+                </h4>
+                <button onclick="closeSourceModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-500 mb-1">Indexed Source Document:</p>
+                <p id="modal-source-title" class="text-xs font-mono bg-slate-100 p-2 rounded text-slate-800">SharePoint / TM_Global_Liquidity_Whitepaper_v3.docx</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold text-slate-500 mb-1">Retrieved Chunk Content (Vector Search Score: 0.94):</p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-700 font-mono max-h-48 overflow-y-auto">
+                    "The Bank provides robust multi-currency notional pooling structures across more than 35 currencies. Automated end-of-day sweeping algorithms calculate interest optimization and execute cross-border zero balancing seamlessly while complying with regional central bank guidelines..."
+                </div>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeSourceModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs rounded-lg transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Interactive Logic -->
+    <script>
+        let currentScreen = 'dashboard';
+        let pipelineCompleted = false;
+        let editedCount = 0;
+
+        function switchScreen(screenId) {
+            // Hide all screens
+            const screens = ['dashboard', 'upload', 'pipeline', 'review', 'template'];
+            screens.forEach(s => {
+                const el = document.getElementById('screen-' + s);
+                if (el) el.classList.add('hidden');
+                const nav = document.getElementById('nav-' + s);
+                if (nav) {
+                    nav.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+                    nav.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+                }
+            });
+
+            // Show target screen
+            const targetEl = document.getElementById('screen-' + screenId);
+            if (targetEl) targetEl.classList.remove('hidden');
+
+            const targetNav = document.getElementById('nav-' + screenId);
+            if (targetNav) {
+                targetNav.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+                targetNav.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+            }
+
+            currentScreen = screenId;
+            updateHeaderInfo(screenId);
+        }
+
+        function updateHeaderInfo(screenId) {
+            const titleEl = document.getElementById('screen-title');
+            const subtitleEl = document.getElementById('screen-subtitle');
+            
+            const info = {
+                'dashboard': ['Dashboard', 'Overview of RFP responses and generation metrics'],
+                'upload': ['1. Upload RFP', 'Provide client RFP document and select TM response template'],
+                'pipeline': ['2. Processing Pipeline', 'Automated 4-step question extraction, context, search, and template population'],
+                'review': ['3. Review & Edit Draft', 'Human-in-the-loop quality and risk sanity check on generated answers'],
+                'template': ['4. Template Output', 'Client-ready Treasury Management response package in FileNet']
+            };
+
+            if (info[screenId]) {
+                titleEl.innerText = info[screenId][0];
+                subtitleEl.innerText = info[screenId][1];
+            }
+        }
+
+        function simulateFileSelect() {
+            document.getElementById('file-input').click();
+        }
+
+        function handleFileSelected(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('dropzone').classList.add('hidden');
+                document.getElementById('file-details-card').classList.remove('hidden');
+                document.getElementById('selected-filename').innerText = file.name;
+                showNotification('RFP file successfully uploaded and registered in FileNet!');
+            }
+        }
+
+        function clearFileSelection() {
+            document.getElementById('file-input').value = '';
+            document.getElementById('dropzone').classList.remove('hidden');
+            document.getElementById('file-details-card').classList.add('hidden');
+        }
+
+        function startProcessing() {
+            switchScreen('pipeline');
+            runPipelineSimulation();
+        }
+
+        function runPipelineSimulation() {
+            // Reset pipeline steps
+            for (let i = 1; i <= 4; i++) {
+                const card = document.getElementById('step-card-' + i);
+                const icon = document.getElementById('step-icon-' + i);
+                const status = document.getElementById('step-status-'  + i);
+                const detail = document.getElementById('step-detail-' + i);
+
+                card.className = "border border-slate-200 rounded-xl p-5 transition bg-white opacity-60";
+                icon.className = "w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs";
+                status.className = "text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md";
+                status.innerText = "Waiting";
+                detail.classList.add('hidden');
+            }
+
+            document.getElementById('pipeline-status-badge').className = "bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-2";
+            document.getElementById('pipeline-status-badge').innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i><span>Pipeline in Progress...</span>';
+            document.getElementById('pipeline-badge').className = "ml-auto text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded animate-pulse";
+            document.getElementById('pipeline-badge').innerText = "Running";
+
+            // Simulate step 1 active
+            activateStep(1, "Analyzing PDF structure, heading hierarchy, and isolating 24 client questions.", () => {
+                activateStep(2, "Extracting RFP contextual constraints (currency preferences, service level requirements).", () => {
+                    activateStep(3, "Querying Azure Knowledge Search across SharePoint & Confluence indices. Synthesizing LLM answers.", () => {
+                        activateStep(4, "Populating client Treasury Management template v4.2. Output compiled successfully.", () => {
+                            pipelineCompleted = true;
+                            document.getElementById('pipeline-status-badge').className = "bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-2";
+                            document.getElementById('pipeline-status-badge').innerHTML = '<i class="fa-solid fa-circle-check"></i><span>Pipeline Completed Successfully</span>';
+                            document.getElementById('pipeline-badge').className = "ml-auto text-[10px] bg-emerald-500 text-white px-1.5 py-0.5 rounded";
+                            document.getElementById('pipeline-badge').innerText = "Ready";
+
+                            const btn = document.getElementById('goto-review-btn');
+                            btn.disabled = false;
+                            btn.className = "px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-lg shadow transition flex items-center space-x-2 cursor-pointer";
+                            showNotification('RFP processing pipeline finished! Draft ready for review.');
+                        });
+                    });
+                });
+            });
+        }
+
+        function activateStep(stepNum, detailText, callback) {
+            setTimeout(() => {
+                const card = document.getElementById('step-card-' + stepNum);
+                const icon = document.getElementById('step-icon-' + stepNum);
+                const status = document.getElementById('step-status-' + stepNum);
+                const detail = document.getElementById('step-detail-' + stepNum);
+
+                card.className = "border border-indigo-200 rounded-xl p-5 transition bg-indigo-50/50 shadow-sm";
+                icon.className = "w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow";
+                status.className = "text-xs font-semibold text-indigo-600 bg-indigo-100 px-2.5 py-1 rounded-md animate-pulse";
+                status.innerText = "Processing...";
+                detail.classList.remove('hidden');
+                detail.innerText = "Status: " + detailText;
+
+                setTimeout(() => {
+                    status.className = "text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-md";
+                    status.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Completed';
+                    if (callback) callback();
+                }, 1200);
+            }, (stepNum - 1) * 1500);
+        }
+
+        function markEdited(textarea) {
+            editedCount++;
+            document.getElementById('edited-count').innerText = editedCount;
+        }
+
+        function saveDraftEdits() {
+            showNotification('Draft edits successfully saved to MongoDB metadata store!');
+        }
+
+        function triggerExport(format) {
+            showNotification('Successfully downloaded Treasury Management RFP response as ' + format.toUpperCase() + '!');
+        }
+
+        function showSourceModal(sourceTitle) {
+            document.getElementById('modal-source-title').innerText = sourceTitle;
+            document.getElementById('source-modal').classList.remove('hidden');
+            document.getElementById('source-modal').classList.add('flex');
+        }
+
+        function closeSourceModal() {
+            document.getElementById('source-modal').classList.remove('flex');
+            document.getElementById('source-modal').classList.add('hidden');
+        }
+
+        function showNotification(text) {
+            const banner = document.getElementById('notification-banner');
+            const textEl = document.getElementById('notification-text');
+            textEl.innerText = text;
+            banner.classList.remove('hidden');
+            setTimeout(() => {
+                hideNotification();
+            }, 4000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification-banner').classList.add('hidden');
+        }
+
+        function resetDemoState() {
+            editedCount = 0;
+            document.getElementById('edited-count').innerText = '0';
+            clearFileSelection();
+            switchScreen('dashboard');
+            showNotification('Demo state reset successfully.');
+        }
+    </script>
+</body>
+</html>
